@@ -1,12 +1,7 @@
 {
+    "git.ignoreLimitWarning": true,
     "files.associations": {
-        "freertos.h": "c",
-        "stdio.h": "c",
-        "task.h": "c",
-        "string.h": "c",
         "gpio.h": "c",
-        "sdkconfig.h": "c",
-        "halgpio.h": "c",
-        "stdint.h": "c"
+        "type_traits": "c"
     }
 }
