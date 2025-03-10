@@ -20,15 +20,23 @@
  /******************************************************************************/
  /* Local defines and types                                                    */
  /******************************************************************************/
- enum
+ typedef enum HAL_GPIO_PIN_MODE_tag
  {
     HAL_GPIO_MODE_OUTPUT = 0,
     HAL_GPIO_MODE_INPUT  = 1
- };
+ } halGpioPinMode_enum;
+
+ typedef enum HAL_GPIO_PIN_PULL_tag
+ {
+    HAL_GPIO_PULL_UP    = 0,
+    HAL_GPIO_PULL_DOWN  = 1,
+    HAL_GPIO_FLOATING   = 2
+ }halGpioPinPullMode_enum;
+
  /******************************************************************************/
  /* Local function prototypes                                                  */
  /******************************************************************************/
- static void configure_pin(HalGpio_Pin gpio_pin, uint8_t mode, uint8_t pullup_en, uint8_t gpio_pulldown_en, uint8_t interrupt_en);
+ static void configure_pin(HalGpio_Pin gpio_pin, halGpioPinMode_enum mode, halGpioPinPullMode_enum gpio_pullMode, uint8_t interrupt_en);
 
  /******************************************************************************/
  /* Local data                                                                 */
@@ -60,9 +68,14 @@
     // For this project the following pins are output
     // IO_16 = L_EN
     // IO_17 = R_EN
-    configure_pin(PIN_LED1_DEVKIT, HAL_GPIO_MODE_OUTPUT, 0, 0, 0);
-    configure_pin(PIN_LED2_DEVKIT, HAL_GPIO_MODE_OUTPUT, 0, 0, 0);
-    configure_pin(PIN_LED3_DEVKIT, HAL_GPIO_MODE_OUTPUT, 0, 0, 0);
+    
+    configure_pin(PIN_LED1_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
+    configure_pin(PIN_LED2_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
+    configure_pin(PIN_LED3_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
+
+    // https://docs.nordicsemi.com/bundle/ug_nrf5340_dk/page/UG/dk/hw_buttons_leds.html
+    // HalGpio_WritePin (PIN_LED2_DEVKIT, 0);
+    // HalGpio_WritePin (PIN_LED3_DEVKIT, 0);
 
     // Set input GPIO pins
 
@@ -131,12 +144,13 @@
  * 
  * @param gpio_pin       GPIO port and pin number
  * @param mode           GPIO mode (0: Input, 1: Output)
- * @param pullup_en      Enable pull-up resistor (1: Enable, 0: Disable)
- * @param pulldown_en    Enable pull-down resistor (1: Enable, 0: Disable)
+ * @param gpio_pullMode  Enable pull-up resistor (0: pullup, 1: pull down, 2: floating)
  * @param interrupt_en   Enable interrupt (1: Enable, 0: Disable)
  */
-static void configure_pin(HalGpio_Pin gpio_pin, uint8_t mode, uint8_t pullup_en, uint8_t pulldown_en, uint8_t interrupt_en) {
-    if (!device_is_ready(gpio_0_dev)) {
+static void configure_pin(HalGpio_Pin gpio_pin, halGpioPinMode_enum mode, halGpioPinPullMode_enum gpio_pullMode, uint8_t interrupt_en)
+{
+    if (!device_is_ready(gpio_0_dev)) 
+    {
         // LOG_ERR("GPIO device not ready!");
         return;
     }
@@ -146,20 +160,25 @@ static void configure_pin(HalGpio_Pin gpio_pin, uint8_t mode, uint8_t pullup_en,
     // Set mode: Input or Output
     if (mode == HAL_GPIO_MODE_OUTPUT) 
     {
-        flags |= GPIO_OUTPUT;
-    } else 
+        flags |= GPIO_OUTPUT_INACTIVE | GPIO_ACTIVE_LOW;  // Set output LOW initially
+    } 
+    else 
     {
         flags |= GPIO_INPUT;
     }
 
     // Configure Pull-up/Pull-down
-    if (pullup_en) 
+    if (gpio_pullMode == HAL_GPIO_PULL_UP) 
     {
         flags |= GPIO_PULL_UP;
     }
-    if (pulldown_en) 
+    else if (gpio_pullMode == HAL_GPIO_PULL_DOWN) 
     {
         flags |= GPIO_PULL_DOWN;
+    }
+    else
+    {
+        // do nothing
     }
 
     // Configure Interrupts
