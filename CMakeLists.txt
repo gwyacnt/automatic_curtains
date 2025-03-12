@@ -5,4 +5,8 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(blinky)
 
 target_sources(app PRIVATE src/main.c
-                           src/HalGpio.c)
+                           src/HalGpio.c
+                           src/HalPwm.c
+                           src/HalTim.c
+                           src/SrvScheduler.c
+                           src/UtilGen.c)

@@ -8,15 +8,19 @@
  *  \remarks 
  */
 
+ // Standard lib includes
  #include <stdint.h>
  #include <stdio.h>
  #include <string.h>
  #include <stdlib.h>
- #include "HalGpio.h"
 
+ // Target specific includes
  #include <zephyr/kernel.h>
  #include <zephyr/drivers/gpio.h>
 
+ // GWYACNT includes
+ #include "HalGpio.h"
+ #include "UtilGen.h"
  /******************************************************************************/
  /* Local defines and types                                                    */
  /******************************************************************************/
@@ -97,7 +101,7 @@
     }
     else
     {
-       return 0xE;
+       return UTIL_GEN_ERROR_GENERIC;
     }
  }
  
@@ -115,7 +119,7 @@
      }
      else
      {
-        return 0xE;
+        return UTIL_GEN_ERROR_GENERIC;
      }
  }
  
@@ -132,7 +136,7 @@
     }
     else
     {
-       return 0xE;
+       return UTIL_GEN_ERROR_GENERIC;
     }
  }
  
