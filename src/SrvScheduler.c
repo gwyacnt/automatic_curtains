@@ -25,7 +25,7 @@ void SrvScheduler_Init(void)
 {
     task_count = 0;
     HalTimer_RegisterCallback(SrvScheduler_Run);
-    HalTimer_Init(1); // 1Hz
+    HalTimer_Init();
 }
 
 // Add a new task to the scheduler
@@ -43,5 +43,5 @@ void SrvScheduler_AddTask(TaskFunction task, uint32_t interval_ms)
 // Start scheduler
 void SrvScheduler_Start(void) 
 {
-    HalTimer_Start();
+    HalTimer_Start(10);
 }

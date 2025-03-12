@@ -1,62 +1,76 @@
 #include "HalTim.h"
 #include <stdint.h>
 #include <nrfx_timer.h>
+#include <stdio.h>
 /* https://docs.nordicsemi.com/bundle/ps_nrf5340/page/timer.html#ariaid-title5 */
-#include "nrfx_config.h"
-#include <nrf.h>  // Nordic header file for direct register access
 
 
+/** @brief Symbol specifying time in milliseconds to wait for handler execution. */
+#define TIME_TO_WAIT_MS 100UL
+
+
+// Get a reference to the TIMER1 instance
+static const nrfx_timer_t timer_0_inst = NRFX_TIMER_INSTANCE(0);
 static HalTimerCallback user_callback = 0;
 
-void TIMER0_IRQHandler(void) __attribute__((interrupt("IRQ")));
-void TIMER0_IRQHandler(void) 
+/**
+ * @brief Function for handling TIMER driver events.
+ *
+ * @param[in] event_type Timer event.
+ * @param[in] p_context  General purpose parameter set during initialization of
+ *                       the timer. This parameter can be used to pass
+ *                       additional information to the handler function, for
+ *                       example, the timer ID.
+ */
+void timer_handler(nrf_timer_event_t event_type, void * p_context)
 {
-    if (NRF_TIMER0->EVENTS_COMPARE[0]) 
+    if(event_type == NRF_TIMER_EVENT_COMPARE0)
     {
-        NRF_TIMER0->EVENTS_COMPARE[0] = 0;  // Clear event flag
-        // Additional step: Clear the pending interrupt in NVIC
-        NVIC_ClearPendingIRQ(TIMER0_IRQn);
-
         if (user_callback) 
         {
+            // char * p_msg = p_context;
+            // printf("\nTimer finished. Context passed to the handler: >%s<", p_msg);
             user_callback();  // Execute user-defined callback
         }
     }
 }
 
-void HalTimer_Init(uint32_t frequency_hz) 
+void HalTimer_Init(void) 
 {
-    // Stop TIMER0 before configuring
-    NRF_TIMER0->TASKS_STOP = 1;
+    nrfx_err_t status;
+    (void)status;
 
-    // Set 32-bit mode
-    NRF_TIMER0->MODE = TIMER_MODE_MODE_Timer;
-    NRF_TIMER0->BITMODE = TIMER_BITMODE_BITMODE_32Bit;
+    uint32_t base_frequency = NRF_TIMER_BASE_FREQUENCY_GET(timer_inst.p_reg);
+    printf("\ntimer base frequency: %lu\n", base_frequency);
+    nrfx_timer_config_t config = NRFX_TIMER_DEFAULT_CONFIG(base_frequency);
+    config.bit_width = NRF_TIMER_BIT_WIDTH_32;
+    // config.p_context = "Some context";
 
-    // Set the timer frequency
-    NRF_TIMER0->PRESCALER = 4;  // 1MHz clock (16MHz / 2^4 = 1MHz)
-    
-    // Set compare register (how often the timer triggers an interrupt)
-    uint32_t ticks = (1000000 / frequency_hz);  // 1MHz clock -> 1 tick = 1us
-    NRF_TIMER0->CC[0] = ticks;
+    status = nrfx_timer_init(&timer_0_inst, &config, timer_handler);
+    if (status != NRFX_SUCCESS) 
+    {
+		printf("\nError initializing timer: %x\n", status);
+	}
 
-    // Enable interrupt on compare match
-    NRF_TIMER0->INTENSET = TIMER_INTENSET_COMPARE0_Msk;
+    nrfx_timer_clear(&timer_0_inst);
 
-    int basePri = __get_BASEPRI();
-
-    __set_BASEPRI(2<<(8-__NVIC_PRIO_BITS));
-
-    // Configure NVIC
-    NVIC_ClearPendingIRQ(TIMER0_IRQn);
-    NVIC_SetPriority(TIMER0_IRQn, 2);  // Set a medium priority
-    NVIC_EnableIRQ(TIMER0_IRQn);
+    IRQ_DIRECT_CONNECT(TIMER0_IRQn, 6, nrfx_timer_0_irq_handler, 0);
+	irq_enable(TIMER0_IRQn);
 }
 
-void HalTimer_Start(void) 
+void HalTimer_Start(uint32_t timeout_us) 
 {
-    NRF_TIMER0->TASKS_CLEAR = 1;  // Reset counter
-    NRF_TIMER0->TASKS_START = 1;  // Start the timer
+    printf("\nTime to wait: %lu ms", timeout_us);
+
+    nrfx_timer_enable(&timer_0_inst);
+    printf("\nTimer status: %s", nrfx_timer_is_enabled(&timer_0_inst) ? "enabled" : "disabled");
+
+    /* Creating variable desired_ticks to store the output of nrfx_timer_ms_to_ticks function */
+    uint32_t desired_ticks = nrfx_timer_ms_to_ticks(&timer_0_inst, timeout_us);
+    printf("\ndesired_ticks: %lu tick", desired_ticks);
+
+    nrfx_timer_extended_compare(&timer_0_inst, NRF_TIMER_CC_CHANNEL0, desired_ticks, 
+        NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK, true);
 }
 
 void HalTimer_Stop(void) 
