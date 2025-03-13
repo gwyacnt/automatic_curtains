@@ -25,21 +25,23 @@
 
  // GPIO output pins
 // GPIO output pin declarations (use extern to prevent multiple definitions)
-extern HalGpio_Pin PIN_LED1_DEVKIT;
-extern HalGpio_Pin PIN_LED2_DEVKIT;
-extern HalGpio_Pin PIN_LED3_DEVKIT;
-extern HalGpio_Pin PIN_LED4_DEVKIT;
- #define PIN_L_EN       16
- #define PIN_R_EN       17
+extern HalGpio_Pin PIN_LED1_DEVKIT; // P0.28
+extern HalGpio_Pin PIN_LED2_DEVKIT; // P0.29
+extern HalGpio_Pin PIN_LED3_DEVKIT; // P0.30
+extern HalGpio_Pin PIN_LED4_DEVKIT; // P0.31
 
- // GPIO input pins
- //#define PIN_BUTTON_DEVKIT GPIO_
- #define PIN_ENC_A      34
- #define PIN_ENC_B      35
+//R_EN and L_EN must be set HIGH to enable movement.
+extern HalGpio_Pin PIN_MOTOR_R_EN; // P0.16
+extern HalGpio_Pin PIN_MOTOR_L_EN; // P0.17
 
- // PWM
- #define PIN_RPWM       18
- #define PIN_LPWM       19
+//RPWM and LPWM are controlled using PWM signals to adjust speed and direction.
+extern HalGpio_Pin PIN_MOTOR_R_PWM; // P0.18
+extern HalGpio_Pin PIN_MOTOR_L_PWM; // P0.19
+
+// OUT C1/A and OUT C2/B provide quadrature signals to track motor position & speed.
+// These pins are read using interrupts or timers in nRF5340.
+extern HalGpio_Pin PIN_ENC_A;       // P0.14
+extern HalGpio_Pin PIN_ENC_B;       // P0.15
  /******************************************************************************/
  /* Exported data                                                              */
  /******************************************************************************/

@@ -49,11 +49,17 @@
  static const struct device *gpio_0_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0));
  static const struct device *gpio_1_dev = DEVICE_DT_GET(DT_NODELABEL(gpio1));
 
+ // Pin assignments
  HalGpio_Pin PIN_LED1_DEVKIT = {.port=0, .pin=28};
  HalGpio_Pin PIN_LED2_DEVKIT = {.port=0, .pin=29};
  HalGpio_Pin PIN_LED3_DEVKIT = {.port=0, .pin=30};
  HalGpio_Pin PIN_LED4_DEVKIT = {.port=0, .pin=31};
-
+ HalGpio_Pin PIN_MOTOR_R_EN  = {.port=0, .pin=16};
+ HalGpio_Pin PIN_MOTOR_L_EN  = {.port=0, .pin=17};
+ HalGpio_Pin PIN_MOTOR_R_PWM = {.port=0, .pin=18};
+ HalGpio_Pin PIN_MOTOR_L_PWM = {.port=0, .pin=19};
+ HalGpio_Pin PIN_ENC_A       = {.port=0, .pin=14};
+ HalGpio_Pin PIN_ENC_B       = {.port=0, .pin=15};
  /******************************************************************************/
  /* Exported data                                                              */
  /******************************************************************************/

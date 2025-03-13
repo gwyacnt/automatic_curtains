@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <nrfx_timer.h>
 #include <stdio.h>
+#include <nrf5340_application_bitfields.h>
 /* https://docs.nordicsemi.com/bundle/ps_nrf5340/page/timer.html#ariaid-title5 */
 
 
@@ -9,7 +10,7 @@
 #define TIME_TO_WAIT_MS 100UL
 
 
-// Get a reference to the TIMER1 instance
+// Get a reference to the TIMER0 instance
 static const nrfx_timer_t timer_0_inst = NRFX_TIMER_INSTANCE(0);
 static HalTimerCallback user_callback = 0;
 
