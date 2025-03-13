@@ -17,7 +17,8 @@
  // Target specific includes
  #include <zephyr/kernel.h>
  #include <zephyr/drivers/gpio.h>
-
+ #include <zephyr/irq.h>
+#include <zephyr/sys/printk.h>
  // GWYACNT includes
  #include "HalGpio.h"
  #include "UtilGen.h"
@@ -48,6 +49,9 @@
  // GPIO Device Bindings
  static const struct device *gpio_0_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0));
  static const struct device *gpio_1_dev = DEVICE_DT_GET(DT_NODELABEL(gpio1));
+ static struct gpio_callback enc_a_cb;
+ static struct gpio_callback enc_b_cb;
+ static volatile int32_t motor_position = 0;  // Motor position counter
 
  // Pin assignments
  HalGpio_Pin PIN_LED1_DEVKIT = {.port=0, .pin=28};
@@ -58,12 +62,27 @@
  HalGpio_Pin PIN_MOTOR_L_EN  = {.port=0, .pin=17};
  HalGpio_Pin PIN_MOTOR_R_PWM = {.port=0, .pin=18};
  HalGpio_Pin PIN_MOTOR_L_PWM = {.port=0, .pin=19};
- HalGpio_Pin PIN_ENC_A       = {.port=0, .pin=14};
- HalGpio_Pin PIN_ENC_B       = {.port=0, .pin=15};
+ HalGpio_Pin PIN_ENC_A       = {.port=0, .pin=23};
+ HalGpio_Pin PIN_ENC_B       = {.port=0, .pin=24};
  /******************************************************************************/
  /* Exported data                                                              */
  /******************************************************************************/
- 
+ void encoder_a_isr(const struct device *dev, struct gpio_callback *cb, uint32_t pins) 
+ {
+    int enc_a = HalGpio_ReadPin(PIN_ENC_A);
+    int enc_b = HalGpio_ReadPin(PIN_ENC_B);
+
+    // Determine direction
+    if (enc_a == enc_b) 
+    {
+        motor_position++;  // Clockwise
+    } else 
+    {
+        motor_position--;  // Counterclockwise
+    }
+
+    printk("\n******* pos: %u \n", motor_position);
+}
  /******************************************************************************/
  /* Exported functions                                                         */
  /******************************************************************************/
@@ -73,24 +92,27 @@
    * @retval None
    */
  void HalGpio_Init(void)
- {
-    // Set output GPIO pins
-    // For this project the following pins are output
-    // IO_16 = L_EN
-    // IO_17 = R_EN
+ {  
+    // Set input GPIO pins
+    configure_pin(PIN_ENC_A, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_UP, 1);
+    configure_pin(PIN_ENC_B, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_UP, 1);
+    // Set up interrupt on ENC_A
+    gpio_pin_interrupt_configure(gpio_0_dev, PIN_ENC_A.pin, GPIO_INT_EDGE_BOTH);
+    gpio_init_callback(&enc_a_cb, encoder_a_isr, (1UL << (PIN_ENC_A.pin)));
+    gpio_add_callback(gpio_0_dev, &enc_a_cb);
+
+    // Set PWM pins
     
+    
+    // Debugging LEDs
+    // https://docs.nordicsemi.com/bundle/ug_nrf5340_dk/page/UG/dk/hw_buttons_leds.html
     configure_pin(PIN_LED1_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
     configure_pin(PIN_LED2_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
     configure_pin(PIN_LED3_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
-
-    // https://docs.nordicsemi.com/bundle/ug_nrf5340_dk/page/UG/dk/hw_buttons_leds.html
+    configure_pin(PIN_LED4_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
+    
     // HalGpio_WritePin (PIN_LED2_DEVKIT, 0);
     // HalGpio_WritePin (PIN_LED3_DEVKIT, 0);
-
-    // Set input GPIO pins
-
-    // Set PWM pins
-
  }
  
  /******************************************************************************/
@@ -174,7 +196,7 @@ static void configure_pin(HalGpio_Pin gpio_pin, halGpioPinMode_enum mode, halGpi
     } 
     else 
     {
-        flags |= GPIO_INPUT;
+        flags |= GPIO_INPUT ;
     }
 
     // Configure Pull-up/Pull-down
@@ -194,7 +216,7 @@ static void configure_pin(HalGpio_Pin gpio_pin, halGpioPinMode_enum mode, halGpi
     // Configure Interrupts
     if (interrupt_en) 
     {
-        flags |= GPIO_INT_ENABLE | GPIO_INT_EDGE_TO_ACTIVE;
+        flags |= GPIO_INT_ENABLE | GPIO_INT_EDGE ;
     }
 
     // Apply Configuration
