@@ -11,4 +11,5 @@ target_sources(app PRIVATE src/main.c
                            src/SrvScheduler.c
                            src/UtilGen.c
                            src/AppEncoder.c
+                           src/AppMotor.c
                            src/App.c)

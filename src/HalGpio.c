@@ -6,25 +6,26 @@
  *  \brief   GPIO component implementation
  *
  *  \remarks 
- */
+*/
 
- // Standard lib includes
- #include <stdint.h>
- #include <stdio.h>
- #include <string.h>
- #include <stdlib.h>
+// Standard lib includes
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
- // Target specific includes
- #include <zephyr/kernel.h>
- #include <zephyr/drivers/gpio.h>
- #include <zephyr/irq.h>
+// Target specific includes
+#include <zephyr/kernel.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/irq.h>
 #include <zephyr/sys/printk.h>
- // GWYACNT includes
- #include "HalGpio.h"
- #include "UtilGen.h"
- /******************************************************************************/
- /* Local defines and types                                                    */
- /******************************************************************************/
+// GWYACNT includes
+#include "HalGpio.h"
+#include "UtilGen.h"
+
+/******************************************************************************/
+/* Local defines and types                                                    */
+/******************************************************************************/
  typedef enum HAL_GPIO_PIN_MODE_tag
  {
     HAL_GPIO_MODE_OUTPUT = 0,
@@ -38,14 +39,15 @@
     HAL_GPIO_FLOATING   = 2
  }halGpioPinPullMode_enum;
 
- /******************************************************************************/
- /* Local function prototypes                                                  */
- /******************************************************************************/
+/******************************************************************************/
+/* Local function prototypes                                                  */
+/******************************************************************************/
  static void configure_pin(HalGpio_Pin gpio_pin, halGpioPinMode_enum mode, halGpioPinPullMode_enum gpio_pullMode, uint8_t interrupt_en);
  static void encoder_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
- /******************************************************************************/
- /* Local data                                                                 */
- /******************************************************************************/
+ 
+/******************************************************************************/
+/* Local data                                                                 */
+/******************************************************************************/
  // GPIO Device Bindings
  static const struct device *gpio_0_dev = DEVICE_DT_GET(DT_NODELABEL(gpio0));
  static const struct device *gpio_1_dev = DEVICE_DT_GET(DT_NODELABEL(gpio1));
