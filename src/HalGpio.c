@@ -42,7 +42,7 @@
  /* Local function prototypes                                                  */
  /******************************************************************************/
  static void configure_pin(HalGpio_Pin gpio_pin, halGpioPinMode_enum mode, halGpioPinPullMode_enum gpio_pullMode, uint8_t interrupt_en);
-
+ static void encoder_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins);
  /******************************************************************************/
  /* Local data                                                                 */
  /******************************************************************************/
@@ -52,8 +52,12 @@
  static struct gpio_callback enc_a_cb;
  static struct gpio_callback enc_b_cb;
  static volatile int32_t motor_position = 0;  // Motor position counter
+ static HalGpioCallback user_callback = NULL;
 
- // Pin assignments
+/******************************************************************************/
+/* Exported data                                                              */
+/******************************************************************************/
+// Pin assignments
  HalGpio_Pin PIN_LED1_DEVKIT = {.port=0, .pin=28};
  HalGpio_Pin PIN_LED2_DEVKIT = {.port=0, .pin=29};
  HalGpio_Pin PIN_LED3_DEVKIT = {.port=0, .pin=30};
@@ -64,25 +68,7 @@
  HalGpio_Pin PIN_MOTOR_L_PWM = {.port=0, .pin=19};
  HalGpio_Pin PIN_ENC_A       = {.port=0, .pin=23};
  HalGpio_Pin PIN_ENC_B       = {.port=0, .pin=24};
- /******************************************************************************/
- /* Exported data                                                              */
- /******************************************************************************/
- void encoder_a_isr(const struct device *dev, struct gpio_callback *cb, uint32_t pins) 
- {
-    int enc_a = HalGpio_ReadPin(PIN_ENC_A);
-    int enc_b = HalGpio_ReadPin(PIN_ENC_B);
 
-    // Determine direction
-    if (enc_a == enc_b) 
-    {
-        motor_position++;  // Clockwise
-    } else 
-    {
-        motor_position--;  // Counterclockwise
-    }
-
-    printk("\n******* pos: %u \n", motor_position);
-}
  /******************************************************************************/
  /* Exported functions                                                         */
  /******************************************************************************/
@@ -98,7 +84,7 @@
     configure_pin(PIN_ENC_B, HAL_GPIO_MODE_INPUT, HAL_GPIO_PULL_UP, 1);
     // Set up interrupt on ENC_A
     gpio_pin_interrupt_configure(gpio_0_dev, PIN_ENC_A.pin, GPIO_INT_EDGE_BOTH);
-    gpio_init_callback(&enc_a_cb, encoder_a_isr, (1UL << (PIN_ENC_A.pin)));
+    gpio_init_callback(&enc_a_cb, encoder_handler, (1UL << (PIN_ENC_A.pin)));
     gpio_add_callback(gpio_0_dev, &enc_a_cb);
 
     // Set PWM pins
@@ -152,11 +138,11 @@
  }
  
  /******************************************************************************/
- int HalGpio_TogglePin(HalGpio_Pin gpio_pin)
- {
+int HalGpio_TogglePin(HalGpio_Pin gpio_pin)
+{
     if(gpio_pin.port == 0)
     {
-       return gpio_pin_toggle(gpio_0_dev, (gpio_pin_t)gpio_pin.pin);
+        return gpio_pin_toggle(gpio_0_dev, (gpio_pin_t)gpio_pin.pin);
     }
     else if(gpio_pin.port == 1)
     {
@@ -164,13 +150,25 @@
     }
     else
     {
-       return UTIL_GEN_ERROR_GENERIC;
+        return UTIL_GEN_ERROR_GENERIC;
     }
- }
- 
- /******************************************************************************/
- /* Local functions                                                            */
- /******************************************************************************/
+}
+/******************************************************************************/
+
+void  HalGpio_RegisterCallback   (HalGpioCallback callback)
+{
+    user_callback = callback;
+}
+/******************************************************************************/
+
+void  HalGpio_UnregisterCallback (void)
+{
+    user_callback = NULL;
+}
+
+/******************************************************************************/
+/* Local functions                                                            */
+/******************************************************************************/
 /**
  * @brief Configure a GPIO pin with specified settings
  * 
@@ -238,7 +236,17 @@ static void configure_pin(HalGpio_Pin gpio_pin, halGpioPinMode_enum mode, halGpi
         // LOG_INF("Configured pin %llu as %s", pin_num, mode ? "OUTPUT" : "INPUT");
     }
 }
- /**
-  * \}
-  * End of file.
-  */
+/******************************************************************************/
+
+static void encoder_handler(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+{
+    if (user_callback) 
+    {
+        user_callback();  // Execute user-defined callback
+    }
+}
+
+/**
+ * \}
+ * End of file.
+ */

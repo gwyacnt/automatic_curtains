@@ -9,4 +9,6 @@ target_sources(app PRIVATE src/main.c
                            src/HalPwm.c
                            src/HalTim.c
                            src/SrvScheduler.c
-                           src/UtilGen.c)
+                           src/UtilGen.c
+                           src/AppEncoder.c
+                           src/App.c)

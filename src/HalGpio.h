@@ -17,6 +17,8 @@
  /******************************************************************************/
  /* Exported defines and types                                                 */
  /******************************************************************************/
+ typedef void (*HalGpioCallback)(void);  // Callback function type
+
  typedef struct HalGpio_Pin_tag
  {
     uint8_t port;
@@ -42,15 +44,18 @@ extern HalGpio_Pin PIN_MOTOR_L_PWM; // P0.19
 // These pins are read using interrupts or timers in nRF5340.
 extern HalGpio_Pin PIN_ENC_A;       // P0.14
 extern HalGpio_Pin PIN_ENC_B;       // P0.15
- /******************************************************************************/
- /* Exported data                                                              */
- /******************************************************************************/
- 
- /******************************************************************************/
- /* Exported functions                                                         */
- /******************************************************************************/
- void          HalGpio_Init     (void);
- int           HalGpio_ReadPin  (HalGpio_Pin gpio_pin);
- int           HalGpio_WritePin (HalGpio_Pin gpio_pin, uint32_t level);
- int           HalGpio_TogglePin(HalGpio_Pin gpio_pin);
- #endif /* defined __HAL_GPIO_H__ */
+/******************************************************************************/
+/* Exported data                                                              */
+/******************************************************************************/
+
+/******************************************************************************/
+/* Exported functions                                                         */
+/******************************************************************************/
+void          HalGpio_Init               (void);
+int           HalGpio_ReadPin            (HalGpio_Pin gpio_pin);
+int           HalGpio_WritePin           (HalGpio_Pin gpio_pin, uint32_t level);
+int           HalGpio_TogglePin          (HalGpio_Pin gpio_pin);
+void          HalGpio_RegisterCallback   (HalGpioCallback callback);
+void          HalGpio_UnregisterCallback (void);
+
+#endif /* defined __HAL_GPIO_H__ */
