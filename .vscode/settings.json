@@ -3,5 +3,9 @@
     "files.associations": {
         "gpio.h": "c",
         "type_traits": "c"
+    },
+    "nrf-connect.debugging.bindings": {
+        "${workspaceFolder}/build": "Launch build",
+        "${workspaceFolder}/build/automatic_curtains": "Launch build"
     }
 }

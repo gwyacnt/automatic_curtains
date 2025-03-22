@@ -64,10 +64,10 @@
  HalGpio_Pin PIN_LED2_DEVKIT = {.port=0, .pin=29};
  HalGpio_Pin PIN_LED3_DEVKIT = {.port=0, .pin=30};
  HalGpio_Pin PIN_LED4_DEVKIT = {.port=0, .pin=31};
- HalGpio_Pin PIN_MOTOR_R_EN  = {.port=0, .pin=16};
- HalGpio_Pin PIN_MOTOR_L_EN  = {.port=0, .pin=17};
- HalGpio_Pin PIN_MOTOR_R_PWM = {.port=0, .pin=18};
- HalGpio_Pin PIN_MOTOR_L_PWM = {.port=0, .pin=19};
+ HalGpio_Pin PIN_MOTOR_R_EN  = {.port=0, .pin=25};
+ HalGpio_Pin PIN_MOTOR_L_EN  = {.port=0, .pin=26};
+ HalGpio_Pin PIN_MOTOR_R_PWM = {.port=0, .pin=04};
+ HalGpio_Pin PIN_MOTOR_L_PWM = {.port=0, .pin=05};
  HalGpio_Pin PIN_ENC_A       = {.port=0, .pin=23};
  HalGpio_Pin PIN_ENC_B       = {.port=0, .pin=24};
 
@@ -89,6 +89,10 @@
     gpio_init_callback(&enc_a_cb, encoder_handler, (1UL << (PIN_ENC_A.pin)));
     gpio_add_callback(gpio_0_dev, &enc_a_cb);
 
+    // Enable R and L pins
+    configure_pin(PIN_MOTOR_R_EN, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_UP, 0);
+    configure_pin(PIN_MOTOR_L_EN, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_UP, 0);
+
     // Set PWM pins
     
     
@@ -98,6 +102,8 @@
     configure_pin(PIN_LED2_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
     configure_pin(PIN_LED3_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
     configure_pin(PIN_LED4_DEVKIT, HAL_GPIO_MODE_OUTPUT, HAL_GPIO_PULL_DOWN, 0);
+
+    
     
     // HalGpio_WritePin (PIN_LED2_DEVKIT, 0);
     // HalGpio_WritePin (PIN_LED3_DEVKIT, 0);
@@ -192,7 +198,7 @@ static void configure_pin(HalGpio_Pin gpio_pin, halGpioPinMode_enum mode, halGpi
     // Set mode: Input or Output
     if (mode == HAL_GPIO_MODE_OUTPUT) 
     {
-        flags |= GPIO_OUTPUT_INACTIVE | GPIO_ACTIVE_LOW;  // Set output LOW initially
+        flags |= GPIO_OUTPUT_INACTIVE;// | GPIO_ACTIVE_LOW;  // Set output LOW initially
     } 
     else 
     {

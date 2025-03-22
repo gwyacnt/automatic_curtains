@@ -27,12 +27,7 @@
 /******************************************************************************/
 /* Local defines and types                                                    */
 /******************************************************************************/
-typedef enum MotorDirection_tag
-{
-    MOTOR_DIRECTION_CW,
-    MOTOR_DIRECTION_CCW,
-    MOTOR_DIRECTION_STOPPED
-} MotorDirection_enum_t;
+
 
 /******************************************************************************/
 /* Local data                                                                 */
@@ -189,6 +184,31 @@ void AppMotor_CalculatePID (double* controlSignal, double* errorValue)
     printf("\n motorPosition: %lld", motor_position);
 }
 
+
+
+void          AppMotor_SetSpeed          (MotorDirection_enum_t direction, int speed_percent)
+{
+    if (direction == MOTOR_DIRECTION_CW)
+    {
+        HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
+        HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
+        PWM_SetDutyCycle(1, speed_percent);
+    }
+    else if (direction == MOTOR_DIRECTION_CCW)
+    {
+        HalGpio_WritePin(PIN_MOTOR_L_EN, 1);
+        HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
+        PWM_SetDutyCycle(2, speed_percent);
+    }
+    else
+    {
+
+        HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
+        HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
+        PWM_SetDutyCycle(1, 0);
+        PWM_SetDutyCycle(2, 0);
+    }
+}
 /******************************************************************************/
 /******************************************************************************/
 /* Local functions                                                            */

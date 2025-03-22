@@ -37,7 +37,7 @@ void PWM_Init(void)
             false,
         },
         .irq_priority  = NRFX_PWM_DEFAULT_CONFIG_IRQ_PRIORITY,      
-        .base_clock    = NRF_PWM_CLK_16MHz, //NRF_PWM_CLK_1MHz,                          
+        .base_clock    = PWM_PRESCALER_PRESCALER_DIV_128, //NRF_PWM_CLK_1MHz,                          
         .count_mode    = NRF_PWM_MODE_UP,                           
         .top_value     = PWM_PERIOD,                                      
         .load_mode     = NRF_PWM_LOAD_INDIVIDUAL,  // Allow independent duty cycles //NRF_PWM_LOAD_COMMON,                       
@@ -64,4 +64,8 @@ void PWM_SetDutyCycle(uint8_t channel, uint8_t duty_cycle)
 
         printf("\nPWM Channel %d: Duty Cycle = %d%%", channel, duty_cycle);
     }    
+    else
+    {
+        printf("\nInvalid operation | PWM_SetDutyCycle(%d, %d)", channel, duty_cycle);
+    }
 }
