@@ -24,6 +24,7 @@ static struct k_work input_work;
 
 static char rx_buffer[MAX_INPUT_LEN];  // Buffer for full sentence
 static uint8_t buffer_pos = 0;         // Position in buffer
+static int8_t motor_pwm = 0;
 
 void print_menu(void) {
     printk("\n===== Interactive Menu =====\n");
@@ -43,48 +44,58 @@ void process_input(struct k_work *work)
         PWM_SetDutyCycle(0, 50);
         PWM_SetDutyCycle(3, 50);
 
-    } else if (strcmp(rx_buffer, "led 0") == 0) 
-    {
-        printk("Turning LEDs 0 and 3 with 0 percent...\n");
-        PWM_SetDutyCycle(0, 0);
-        PWM_SetDutyCycle(3, 0);
+    // } else if (strcmp(rx_buffer, "led 0") == 0) 
+    // {
+    //     printk("Turning LEDs 0 and 3 with 0 percent...\n");
+    //     PWM_SetDutyCycle(0, 0);
+    //     PWM_SetDutyCycle(3, 0);
     
-    } else if (strcmp(rx_buffer, "led 100") == 0) 
-    {
-        printk("Turning LEDs 0 and 3 with 100 percent...\n");
-        PWM_SetDutyCycle(0, 100);
-        PWM_SetDutyCycle(3, 100);
+    // } else if (strcmp(rx_buffer, "led 100") == 0) 
+    // {
+    //     printk("Turning LEDs 0 and 3 with 100 percent...\n");
+    //     PWM_SetDutyCycle(0, 100);
+    //     PWM_SetDutyCycle(3, 100);
 
-    } else if (strcmp(rx_buffer, "R100") == 0) 
-    {
-        printk("CW 100 ...\n");
-        AppMotor_SetSpeed(MOTOR_DIRECTION_CW, 100);
-    } else if (strcmp(rx_buffer, "R50") == 0) 
-    {
-        printk("CW 50 ...\n");
-        AppMotor_SetSpeed(MOTOR_DIRECTION_CW, 50);
+    // } else if (strcmp(rx_buffer, "R100") == 0) 
+    // {
+    //     printk("CW 100 ...\n");
+    //     AppMotor_SetSpeed(MOTOR_DIRECTION_CW, 100);
+    // } else if (strcmp(rx_buffer, "R50") == 0) 
+    // {
+    //     printk("CW 50 ...\n");
+    //     AppMotor_SetSpeed(MOTOR_DIRECTION_CW, 50);
 
-    } else if (strcmp(rx_buffer, "S") == 0) 
-    {
-        printk("Stopping ...\n");
-        AppMotor_SetSpeed(MOTOR_DIRECTION_STOPPED, 0);
-    } else if (strcmp(rx_buffer, "L50") == 0) 
-    {
-        printk("CCW 50 ...\n");
-        AppMotor_SetSpeed(MOTOR_DIRECTION_CCW, 50);
-    } else if (strcmp(rx_buffer, "L100") == 0) 
-    {
-        printk("CCW 100 ...\n");
-        AppMotor_SetSpeed(MOTOR_DIRECTION_CCW, 100);
+    // } else if (strcmp(rx_buffer, "S") == 0) 
+    // {
+    //     printk("Stopping ...\n");
+    //     AppMotor_SetSpeed(MOTOR_DIRECTION_STOPPED, 0);
+    // } else if (strcmp(rx_buffer, "L50") == 0) 
+    // {
+    //     printk("CCW 50 ...\n");
+    //     AppMotor_SetSpeed(MOTOR_DIRECTION_CCW, 50);
+    // } else if (strcmp(rx_buffer, "L100") == 0) 
+    // {
+    //     printk("CCW 100 ...\n");
+    //     AppMotor_SetSpeed(MOTOR_DIRECTION_CCW, 100);
 
-    } else if (strcmp(rx_buffer, "R 0") == 0) 
+    // } else if (strcmp(rx_buffer, "R 0") == 0) 
+    // {
+    //     printk("R_EN 0...\n");
+    //     HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
+    // } else if (strcmp(rx_buffer, "R 1") == 0) 
+    // {
+    //     printk("R_EN 1...\n");
+    //     HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
+    } else if (strcmp(rx_buffer, "u") == 0) 
     {
-        printk("R_EN 0...\n");
-        HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
-    } else if (strcmp(rx_buffer, "R 1") == 0) 
+        motor_pwm = motor_pwm + 10;
+        printk("motor pwm = %d\n", motor_pwm);
+        AppMotor_SetSpeed(motor_pwm);
+    } else if (strcmp(rx_buffer, "d") == 0) 
     {
-        printk("R_EN 1...\n");
-        HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
+        motor_pwm = motor_pwm - 10;
+        printk("motor pwm = %d\n", motor_pwm);
+        AppMotor_SetSpeed(motor_pwm);
 
     } else if (strcmp(rx_buffer, "status") == 0) {
         printk("System is running normally.\n");

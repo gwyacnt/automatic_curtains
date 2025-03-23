@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #define PWM_INST_IDX 0
-#define PWM_PERIOD 16000 //High-Resolution Control (Precise Speed Control)
+#define PWM_PERIOD 640 //High-Resolution Control (Precise Speed Control)
 
 static nrfx_pwm_t pwm_instance = NRFX_PWM_INSTANCE(PWM_INST_IDX);
 
@@ -22,6 +22,13 @@ void PWM_Init(void)
 {
     nrfx_err_t status;
     (void)status;
+
+    /* The DC motor driver BTS7960 is capable of PWM up to 25 kHz.
+    Frequency = (16MHz/Presccaler) * top_value
+    25000     = (16000000/Prescaler) * top_value
+    If Prescaler = 1
+    then top_value = 640
+    */
     
     nrfx_pwm_config_t config = {                                                               
         .output_pins   = {                                          
@@ -37,7 +44,7 @@ void PWM_Init(void)
             false,
         },
         .irq_priority  = NRFX_PWM_DEFAULT_CONFIG_IRQ_PRIORITY,      
-        .base_clock    = PWM_PRESCALER_PRESCALER_DIV_128, //NRF_PWM_CLK_1MHz,                          
+        .base_clock    = PWM_PRESCALER_PRESCALER_DIV_1, //NRF_PWM_CLK_1MHz,                          
         .count_mode    = NRF_PWM_MODE_UP,                           
         .top_value     = PWM_PERIOD,                                      
         .load_mode     = NRF_PWM_LOAD_INDIVIDUAL,  // Allow independent duty cycles //NRF_PWM_LOAD_COMMON,                       

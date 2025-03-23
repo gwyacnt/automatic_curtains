@@ -24,6 +24,8 @@ columns 1
 ```
 # Pinout
 
+![alt text](schematics/nRF5340_DK_front.svg?raw=true)
+
 | BTS7960 (Motor Driver)    | nRF5340 Pin                      | Function                           |
 |----------------|----------------------------------|------------------------------------|
 | RPWM	         | P0.04	                        | Motor PWM (Right)                  |
@@ -44,6 +46,7 @@ Functionality:
 RPWM and LPWM are controlled using PWM signals to adjust speed and direction.
 R_EN and L_EN must be set HIGH to enable movement.
 BTS7960 provides high-power motor control (supports up to 43A).
+
 
 
 | Encoder/Motor Pin	     | nRF5340 Pin	                    |Function                            |

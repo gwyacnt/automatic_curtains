@@ -37,5 +37,5 @@ void          AppMotor_Halt              (void);
 void          AppMotor_CalculatePID      (double* controlSignal, double* errorValue);
 void          AppMotor_SetPidCoeffs      (double P, double I, double D);
 void          AppMotor_DriveMotorTask    (void);
-void          AppMotor_SetSpeed          (MotorDirection_enum_t direction, int speed_percent);
+void          AppMotor_SetSpeed          (int speed_percent);
 #endif /* defined __APP_MOTOR_H__ */

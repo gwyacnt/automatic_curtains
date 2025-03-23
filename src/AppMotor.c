@@ -186,27 +186,41 @@ void AppMotor_CalculatePID (double* controlSignal, double* errorValue)
 
 
 
-void          AppMotor_SetSpeed          (MotorDirection_enum_t direction, int speed_percent)
+void  AppMotor_SetSpeed(int speed_percent)
 {
-    if (direction == MOTOR_DIRECTION_CW)
+    
+    if (speed_percent == 0) // Stop
     {
-        HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
-        HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
-        PWM_SetDutyCycle(1, speed_percent);
-    }
-    else if (direction == MOTOR_DIRECTION_CCW)
-    {
-        HalGpio_WritePin(PIN_MOTOR_L_EN, 1);
-        HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
-        PWM_SetDutyCycle(2, speed_percent);
-    }
-    else
-    {
-
         HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
         HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
         PWM_SetDutyCycle(1, 0);
         PWM_SetDutyCycle(2, 0);
+        printf("\nStopping");
+    }
+    else if( speed_percent > 0 ) // Clockwise
+    {
+        // Cap speed
+        if (speed_percent > 100) speed_percent = 100;
+        // Disable CCW
+        HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
+        PWM_SetDutyCycle(2, 0);
+        // Set CW
+        HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
+        PWM_SetDutyCycle(1, speed_percent);
+        printf("\nClockwise with %d speed", speed_percent);
+    }
+    else if( speed_percent < 0)
+    {
+        // Cap speed
+        if (speed_percent < -100) speed_percent = -100;
+        // Disable CW
+        HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
+        PWM_SetDutyCycle(1, 0);
+        // Set CCW
+        speed_percent = speed_percent*-1;
+        HalGpio_WritePin(PIN_MOTOR_L_EN, 1);
+        PWM_SetDutyCycle(2, speed_percent);
+        printf("\nCounter-clockwise with %d speed", speed_percent);
     }
 }
 /******************************************************************************/
