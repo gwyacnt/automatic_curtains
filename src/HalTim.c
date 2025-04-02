@@ -84,7 +84,7 @@ void HalTimer_Start(uint32_t timeout_us)
 
     /* Creating variable desired_ticks to store the output of nrfx_timer_ms_to_ticks function */
     uint32_t desired_ticks = nrfx_timer_ms_to_ticks(&timer_0_inst, timeout_us);
-    printf("\ndesired_ticks: %u tick", desired_ticks);
+    // printf("\ndesired_ticks: %u tick", desired_ticks);
 
     nrfx_timer_extended_compare(&timer_0_inst, NRF_TIMER_CC_CHANNEL0, desired_ticks, 
         NRF_TIMER_SHORT_COMPARE0_CLEAR_MASK, true);

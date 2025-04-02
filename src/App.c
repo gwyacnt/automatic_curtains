@@ -41,8 +41,8 @@ void process_input(struct k_work *work)
     if (strcmp(rx_buffer, "led 50") == 0) 
     {
         printk("Turning LEDs 0 and 3 with 50 percent...\n");
-        PWM_SetDutyCycle(0, 50);
-        PWM_SetDutyCycle(3, 50);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_LED3_DEVKIT, 50);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_LED4_DEVKIT, 50);
 
     // } else if (strcmp(rx_buffer, "led 0") == 0) 
     // {
@@ -88,13 +88,13 @@ void process_input(struct k_work *work)
     //     HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
     } else if (strcmp(rx_buffer, "u") == 0) 
     {
-        motor_pwm = motor_pwm + 10;
-        printk("motor pwm = %d\n", motor_pwm);
+        motor_pwm = motor_pwm + 20;
+        printk("motor pwm = %d%%\n", motor_pwm);
         AppMotor_SetSpeed(motor_pwm);
     } else if (strcmp(rx_buffer, "d") == 0) 
     {
-        motor_pwm = motor_pwm - 10;
-        printk("motor pwm = %d\n", motor_pwm);
+        motor_pwm = motor_pwm - 20;
+        printk("motor pwm = %d%%\n", motor_pwm);
         AppMotor_SetSpeed(motor_pwm);
 
     } else if (strcmp(rx_buffer, "status") == 0) {
@@ -170,11 +170,25 @@ void AppProcess(void)
      // Configure UART for interrupt-driven operation
      uart_irq_callback_user_data_set(uart_dev, uart_interrupt_handler, NULL);
      uart_irq_rx_enable(uart_dev);
- 
+
+     printk("\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n\n");
      printk("\nSerial Interactive Menu Started!\n");
      print_menu();
+
+     AppMotor_SetTarget (AppEncoder_ConvertNumOfRotationsToPos(5));
  
      while (1) {
+        printk("\n");
+        AppMotor_DriveMotorTask();
+        k_sleep(K_SECONDS(1));  // Keep main loop running
+        // int64_t pos = AppEncoder_GetPosition();
+        // if (pos!= 0 && pos % (11*90*2) == 0)
+        // {
+        //     AppMotor_SetSpeed(0);
+        //     motor_pwm = 0;
+        //     test_to_reach_full_rotation+=1;
+        //     printf("\n pos%%11 reached %lld - test_to_full_rot = %lld", pos, test_to_reach_full_rotation);
+        // }
         //  k_sleep(K_SECONDS(1));  // Keep main loop running
         //  printk(".");  // Simulate background process
      }

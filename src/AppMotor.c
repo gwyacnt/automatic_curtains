@@ -42,8 +42,8 @@ static int64_t previousTime;
 
 /* Motor Driving parameters */
 static int64_t setpoint;
-static uint8_t maxSpeed_percent;
-static uint8_t minSpeed_percent;
+static uint8_t maxSpeed_percent = 40;
+static uint8_t minSpeed_percent = 20;
 
 /******************************************************************************/
 /* Local function prototypes                                                  */
@@ -74,6 +74,8 @@ int64_t AppMotor_GetTarget (void)
 
 void AppMotor_DriveMotorTask (void)
 {
+    printf("\n TASK: targetPosition: %f", (double)setpoint);
+
     double control_pwm, errorValue;
     MotorDirection_enum_t motorDirection;
 
@@ -96,10 +98,11 @@ void AppMotor_DriveMotorTask (void)
     //---------------------------------------------------------------------------
     //Speed
     //PWM values cannot be negative and have to be integers
-    uint64_t PWMValue = (uint64_t)fabs(control_pwm);
+    int PWMValue = (int)fabs(control_pwm);
+    printf("\n TASK: PWMValue after fabs: %f", (float)PWMValue);
 
     // 0-100
-    PWMValue = PWMValue/UINT64_MAX *100;
+    // PWMValue = PWMValue/UINT64_MAX *100;
 
     // checking speed limits
     if (PWMValue > maxSpeed_percent)
@@ -119,31 +122,30 @@ void AppMotor_DriveMotorTask (void)
     /*  Set Direction and motor speed  */
     if (motorDirection == MOTOR_DIRECTION_CCW) //-1 == CCW
     {
-        HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
-        HalGpio_WritePin(PIN_MOTOR_L_EN, 1);
-        PWM_SetDutyCycle(PIN_MOTOR_L_PWM.pin, PWMValue);
+        HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
+        HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_MOTOR_R_PWM, PWMValue);
     }
     else if (motorDirection == MOTOR_DIRECTION_CW) // == 1, CW
     {
-        HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
-        HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
-        PWM_SetDutyCycle(PIN_MOTOR_R_PWM.pin, PWMValue);
+        HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
+        HalGpio_WritePin(PIN_MOTOR_L_EN, 1);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_MOTOR_L_PWM, PWMValue);
     }
     else // == MOTOR_DIRECTION_STOPPED, stop/break
     {
         HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
         HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
         PWMValue = 0;
-        PWM_SetDutyCycle(PIN_MOTOR_R_PWM.pin, PWMValue);
-        PWM_SetDutyCycle(PIN_MOTOR_L_PWM.pin, PWMValue);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_MOTOR_R_PWM, PWMValue);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_MOTOR_L_PWM, PWMValue);
         //In this block we also shut down the motor and set the PWM to zero
     }
 
     //----------------------------------------------------
     //Optional printing on the terminal to check what's up
-    printf("\n errorValue: %f",errorValue);
-    printf("\n PWMValue: %lld", PWMValue);
-    printf("\n targetPosition: %lld", setpoint);
+    printf("\n TASK: errorValue: %f",errorValue);
+    printf("\n TASK: PWMValue: %f", (float)PWMValue);
 }
 /******************************************************************************/
 
@@ -162,7 +164,7 @@ void AppMotor_CalculatePID (double* controlSignal, double* errorValue)
     // current time
     int64_t currentTime = k_uptime_get();
     // time difference in seconds
-    int64_t deltaTime_s = (currentTime - previousTime) / 1000.0;
+    double deltaTime_s = (currentTime - previousTime) / 1000.0;
     // save the current time for the next iteration to get the time difference
     previousTime = currentTime; 
 
@@ -181,11 +183,13 @@ void AppMotor_CalculatePID (double* controlSignal, double* errorValue)
 
     //----------------------------------------------------
     //Optional printing on the terminal to check what's up
-    printf("\n motorPosition: %lld", motor_position);
+    printf("\n PID: motorPosition: %f", (double)motor_position);
+    printf("\n PID: controlSignal: %f", *controlSignal);
+    printf("\n PID: errorValue: %f", *errorValue);
 }
 
 
-
+/******************************************************************************/
 void  AppMotor_SetSpeed(int speed_percent)
 {
     
@@ -193,8 +197,10 @@ void  AppMotor_SetSpeed(int speed_percent)
     {
         HalGpio_WritePin(PIN_MOTOR_R_EN, 0);
         HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
-        PWM_SetDutyCycle(1, 0);
-        PWM_SetDutyCycle(2, 0);
+        // HAL_PWM_CHANNEL_MOTOR_R_PWM = 1,                                                 
+        // HAL_PWM_CHANNEL_MOTOR_L_PWM = 2,    
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_MOTOR_R_PWM, 0);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_MOTOR_L_PWM, 0);
         printf("\nStopping");
     }
     else if( speed_percent > 0 ) // Clockwise
@@ -203,10 +209,10 @@ void  AppMotor_SetSpeed(int speed_percent)
         if (speed_percent > 100) speed_percent = 100;
         // Disable CCW
         HalGpio_WritePin(PIN_MOTOR_L_EN, 0);
-        PWM_SetDutyCycle(2, 0);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_MOTOR_L_PWM, 0);
         // Set CW
         HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
-        PWM_SetDutyCycle(1, speed_percent);
+        PWM_SetDutyCycle(HAL_PWM_CHANNEL_MOTOR_R_PWM, speed_percent);
         printf("\nClockwise with %d speed", speed_percent);
     }
     else if( speed_percent < 0)

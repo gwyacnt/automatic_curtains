@@ -2,7 +2,11 @@
     "git.ignoreLimitWarning": true,
     "files.associations": {
         "gpio.h": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "halgpio.h": "c",
+        "halpwm.h": "c",
+        "nrfx_pwm.h": "c",
+        "util.h": "c"
     },
     "nrf-connect.debugging.bindings": {
         "${workspaceFolder}/build": "Launch build",

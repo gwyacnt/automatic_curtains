@@ -15,7 +15,9 @@
 
 void       AppEncoder_Init         (void);
 int64_t    AppEncoder_GetPosition  (void);
+int64_t AppEncoder_GetNumberOfFullRotations  (void);
 void       AppEncoder_SetPosition  (int64_t pos);
+int64_t AppEncoder_ConvertNumOfRotationsToPos (int64_t pos_in_number_of_rotations);
 void       AppEncoder_InterruptHandler  (void);
 
 #endif

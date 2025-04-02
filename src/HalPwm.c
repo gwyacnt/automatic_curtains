@@ -59,7 +59,7 @@ void PWM_Init(void)
 }
 
 // Set PWM Duty Cycle (0-100%)
-void PWM_SetDutyCycle(uint8_t channel, uint8_t duty_cycle) 
+void PWM_SetDutyCycle(HAL_PWM_CHANNEL_t channel, uint8_t duty_cycle) 
 {
     if (channel < HAL_PWM_N_OF_CONNECTED_CHANNELS)
     {
