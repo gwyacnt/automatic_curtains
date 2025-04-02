@@ -4,6 +4,7 @@
 #include "HalGpio.h"
 #include "UtilGen.h"
 #include "SrvScheduler.h"
+#include "SrvMenu.h"
 #include "HalPwm.h"
 #include "HalTim.h"
 #include "AppEncoder.h"
@@ -86,11 +87,18 @@ void process_input(struct k_work *work)
     // {
     //     printk("R_EN 1...\n");
     //     HalGpio_WritePin(PIN_MOTOR_R_EN, 1);
-    } else if (strcmp(rx_buffer, "u") == 0) 
+    } else if (rx_buffer[0] == 's' && rx_buffer[1] == ' ') 
     {
-        motor_pwm = motor_pwm + 20;
-        printk("motor pwm = %d%%\n", motor_pwm);
-        AppMotor_SetSpeed(motor_pwm);
+        int speed = atoi(&rx_buffer[3]);  // Extract speed value
+        if (speed >= 0 && speed <= 100)  // Validate speed range
+        {
+            printk("Setting motor speed to %d%%...\n", speed);
+            AppMotor_SetSpeed(speed);
+        } 
+        else 
+        {
+            printk("Invalid speed value. Please enter a value between 0 and 100.\n");
+        }
     } else if (strcmp(rx_buffer, "d") == 0) 
     {
         motor_pwm = motor_pwm - 20;
@@ -157,6 +165,7 @@ void AppProcess(void)
      SrvScheduler_AddTask(tastBlinkLED, 1000);
      SrvScheduler_Start();
      AppEncoder_Init();
+     
 
      uart_dev = DEVICE_DT_GET(UART_DEVICE_NODE);
      if (!device_is_ready(uart_dev)) {
@@ -173,14 +182,21 @@ void AppProcess(void)
 
      printk("\n\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n\n");
      printk("\nSerial Interactive Menu Started!\n");
-     print_menu();
+    //  print_menu();
+    SrvMenu_Init();  
+    int ch = getchar();
+    if(ch == 'x')
+    {
+        printf("\n getchar and printf are working.");
+    }
 
-     AppMotor_SetTarget (AppEncoder_ConvertNumOfRotationsToPos(5));
+    //  AppMotor_SetTarget (AppEncoder_ConvertNumOfRotationsToPos(5));
  
      while (1) {
-        printk("\n");
-        AppMotor_DriveMotorTask();
-        k_sleep(K_SECONDS(1));  // Keep main loop running
+        SrvMenu_Process();
+        // printk("\n");
+        // AppMotor_DriveMotorTask();
+        // k_sleep(K_SECONDS(1));  // Keep main loop running
         // int64_t pos = AppEncoder_GetPosition();
         // if (pos!= 0 && pos % (11*90*2) == 0)
         // {

@@ -8,11 +8,12 @@
  *  \remarks 
  */
 
- #ifndef __HAL_GPIO_H__
- #define __HAL_GPIO_H__
+#ifndef __HAL_GPIO_H__
+#define __HAL_GPIO_H__
  
- #include <stdint.h>
- #include <stdbool.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include "SrvMenu.h"
 
  /******************************************************************************/
  /* Exported defines and types                                                 */
@@ -47,6 +48,7 @@ extern HalGpio_Pin PIN_ENC_B;
 /******************************************************************************/
 /* Exported data                                                              */
 /******************************************************************************/
+extern const srvMenuElement_ts elemGpioDrv;
 
 /******************************************************************************/
 /* Exported functions                                                         */

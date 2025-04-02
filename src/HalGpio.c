@@ -22,7 +22,7 @@
 // GWYACNT includes
 #include "HalGpio.h"
 #include "UtilGen.h"
-
+#include "SrvMenu.h"
 /******************************************************************************/
 /* Local defines and types                                                    */
 /******************************************************************************/
@@ -70,6 +70,33 @@
  HalGpio_Pin PIN_MOTOR_L_PWM = {.port=0, .pin=05};
  HalGpio_Pin PIN_ENC_A       = {.port=0, .pin=23};
  HalGpio_Pin PIN_ENC_B       = {.port=0, .pin=24};
+
+
+ // pin ID param (for write pin action)
+SRVMENU_ACTIONPARAMSTR(write_pin, static char, 3, pin_id, "GPIO Pin ID (examples: A1, b15, c0, C2..etc)");
+// pin state param (for write pin action)
+SRVMENU_ACTIONPARAMINT(write_pin, static int, pin_state, "GPIO Pin state (0 or 1)", MENU_VALUE_FMT_LIMITS, 0, 1);
+// write pin action
+SRVMENU_ACTION_BEGIN(write_pin) \
+SRVMENU_ACTION_PARAM(write_pin, pin_id      , 'p') \
+SRVMENU_ACTION_PARAM(write_pin, pin_state   , 's') \
+SRVMENU_ACTION_END(write_pin, "Write GPIO pin");
+
+// pin ID param (for read pin action)
+SRVMENU_ACTIONPARAMSTR(read_pin, static char, 3, pin_id, "GPIO Pin ID (examples: A1, b15, c0, C2..etc)");
+// read pin action
+SRVMENU_ACTION_BEGIN(read_pin) \
+SRVMENU_ACTION_PARAM(read_pin, pin_id      , 'p') \
+SRVMENU_ACTION_END(read_pin, "Read GPIO pin");
+
+ /* GPIO Menu */
+static const srvMenuList_ts gpioDrvMenu[] =
+{
+   {&elem_write_pin,   (int)'w'}
+  ,{&elem_read_pin ,   (int)'r'}
+  ,{NULL,0}
+};
+const srvMenuElement_ts elemGpioDrv = {"gpio", "GPIO driver", &SRV_MENU_TYPE_MENU, gpioDrvMenu};
 
  /******************************************************************************/
  /* Exported functions                                                         */
@@ -254,6 +281,26 @@ static void encoder_handler(const struct device *dev, struct gpio_callback *cb, 
     }
 }
 
+/******************************************************************************/
+static int action_write_pin(const srvMenuElement_ts * elm, int opt)
+{
+
+    printf("#Writing GPIO pin %s with %d.\n", action_write_pin_pin_id, action_write_pin_pin_state);
+    printf("\n>");
+
+    return 0;
+}
+
+/******************************************************************************/
+
+static int action_read_pin(const srvMenuElement_ts * elm, int opt)
+{
+    // Call the HalScsGpio_ReadPin function
+    printf(">P%s=UNKNONW\n", action_read_pin_pin_id);
+    printf("\n>");
+
+    return 0;
+}
 /**
  * \}
  * End of file.
